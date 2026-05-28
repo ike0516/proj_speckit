@@ -13,3 +13,4 @@ jobs:
     steps:
       - run: echo "hello"
       - run: echo "my name is test,"
+      - run: echo "how are you doing?"

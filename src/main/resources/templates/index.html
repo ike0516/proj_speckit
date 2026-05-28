@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Todo App</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+  <main id="app">
+    <h1>Simple Todo App</h1>
+
+    <form th:action="@{/tasks}" method="post" id="task-form">
+      <input type="text" name="title" id="task-input" placeholder="タスクを入力..." autocomplete="off" required>
+      <button type="submit">追加</button>
+    </form>
+
+    <ul id="task-list">
+      <li th:if="${tasks.empty}" class="empty-state">タスクがありません</li>
+      <li th:each="task : ${tasks}" th:classappend="${task.completed} ? 'completed'">
+        <form th:action="@{/tasks/{id}/toggle(id=${task.id})}" method="post" style="display:inline">
+          <input type="checkbox" th:checked="${task.completed}" onchange="this.form.submit()">
+        </form>
+        <label th:text="${task.title}"></label>
+        <form th:action="@{/tasks/{id}/delete(id=${task.id})}" method="post" style="display:inline">
+          <button type="submit" class="delete-btn">削除</button>
+        </form>
+      </li>
+    </ul>
+  </main>
+</body>
+</html>

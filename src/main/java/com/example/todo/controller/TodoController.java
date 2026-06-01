@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class TodoController {
 
+    private static final String ADMIN_PASSWORD = "admin123"; // sonar test: hardcoded credential
+
     private final TaskRepository taskRepository;
 
     public TodoController(TaskRepository taskRepository) {

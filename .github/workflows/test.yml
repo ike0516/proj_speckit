@@ -11,18 +11,61 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # リポジトリのコードを取得する
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v4
+      # Java 17 をセットアップする
+      - name: Java 17 をセットアップ
+        uses: actions/setup-java@v4
         with:
           java-version: 17
           distribution: temurin
           cache: maven
 
-      - name: Run tests
+      # JUnit テストを実行する
+      - name: テストを実行
         run: ./mvnw test
 
-      - name: Upload surefire reports
+      # テスト失敗時に失敗内容をわかりやすく出力する
+      - name: テスト失敗内容を出力
+        if: failure()
+        run: |
+          python3 - <<'EOF'
+          import glob
+          import xml.etree.ElementTree as ET
+
+          failed = []
+          for xml_file in glob.glob("target/surefire-reports/TEST-*.xml"):
+              tree = ET.parse(xml_file)
+              root = tree.getroot()
+              for testcase in root.findall("testcase"):
+                  for node in testcase.findall("failure") + testcase.findall("error"):
+                      failed.append({
+                          "class": testcase.get("classname", ""),
+                          "test": testcase.get("name", ""),
+                          "message": node.get("message", ""),
+                          "detail": node.text or "",
+                      })
+
+          if not failed:
+              print("失敗したテストはありません")
+          else:
+              print(f"\n{'='*60}")
+              print(f"失敗したテスト: {len(failed)} 件")
+              print(f"{'='*60}")
+              for i, f in enumerate(failed, 1):
+                  print(f"\n[{i}] {f['class']}.{f['test']}")
+                  print(f"    メッセージ: {f['message']}")
+                  if f['detail'].strip():
+                      for line in f['detail'].strip().splitlines()[:10]:
+                          print(f"    {line}")
+                  print(f"{'─'*60}")
+                  print(f"::error title={f['test']}::{f['class']}.{f['test']} - {f['message']}")
+          EOF
+
+      # テスト失敗時にレポートをアーティファクトとして保存する
+      - name: Surefire レポートをアップロード
         if: failure()
         uses: actions/upload-artifact@v4
         with:

@@ -4,7 +4,10 @@ import com.example.todo.model.Task;
 import com.example.todo.repository.TaskRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class TodoController {
@@ -18,15 +21,16 @@ public class TodoController {
     @GetMapping("/")
     public String index(Model model) {
         model.addAttribute("tasks", taskRepository.findAll());
-        model.addAttribute("newTask", new Task());
         return "index";
     }
 
     @PostMapping("/tasks")
     public String createTask(@RequestParam String title) {
-        Task task = new Task();
-        task.setTitle(title);
-        taskRepository.save(task);
+        if (title != null && !title.trim().isEmpty()) {
+            Task task = new Task();
+            task.setTitle(title);
+            taskRepository.save(task);
+        }
         return "redirect:/";
     }
 

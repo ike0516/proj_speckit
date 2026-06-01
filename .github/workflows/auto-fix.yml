@@ -1,16 +1,17 @@
 name: Auto-fix Tests
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_run:
+    workflows: ["Test"]
+    types: [completed]
 
 jobs:
-  test-and-fix:
+  fix:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -28,23 +29,23 @@ jobs:
       - name: Install anthropic
         run: pip install anthropic
 
-      - name: Run tests
-        id: test
-        run: ./mvnw test
-        continue-on-error: true
+      - name: Download surefire reports
+        uses: actions/download-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Fix failing tests with Claude
-        if: steps.test.outcome == 'failure'
         run: python3 .github/scripts/fix_with_claude.py
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       - name: Re-run tests after fix
-        if: steps.test.outcome == 'failure'
         run: ./mvnw test
 
       - name: Create PR with fixes
-        if: steps.test.outcome == 'failure'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

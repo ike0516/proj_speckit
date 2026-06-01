@@ -40,7 +40,7 @@ jobs:
       - name: Fix failing tests with Claude
         run: python3 .github/scripts/fix_with_claude.py
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.CLAUDECODEAPIKEY }}
 
       - name: Re-run tests after fix
         run: ./mvnw test

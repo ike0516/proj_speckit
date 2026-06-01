@@ -24,11 +24,9 @@ public class TodoController {
 
     @PostMapping("/tasks")
     public String createTask(@RequestParam String title) {
-        if (title != null && !title.trim().isEmpty()) {
-            Task task = new Task();
-            task.setTitle(title.trim());
-            taskRepository.save(task);
-        }
+        Task task = new Task();
+        task.setTitle(title);
+        taskRepository.save(task);
         return "redirect:/";
     }
 

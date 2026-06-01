@@ -1,0 +1,35 @@
+name: SonarCloud
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  sonar:
+    runs-on: ubuntu-latest
+
+    steps:
+      # リポジトリのコードを取得する
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Java 17 をセットアップする
+      - name: Java 17 をセットアップ
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+          cache: maven
+
+      # SonarCloud で脆弱性・品質チェックを実行する
+      - name: SonarCloud 解析を実行
+        run: ./mvnw verify sonar:sonar
+          -Dsonar.projectKey=ike0516_proj_speckit
+          -Dsonar.organization=ike0516
+          -Dsonar.host.url=https://sonarcloud.io
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
